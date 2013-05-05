@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>WebSockets - Simple chat</title>
+ 
+        <style>
+        * { font-family:tahoma; font-size:12px; padding:0px; margin:0px; }
+        p { line-height:1.2em; }
+	#dialog {
+		position:absolute; top:0; left:0; width:100%; height:100%;
+		background-color:rgba(0,0,0,.8);
+	}
+	#dialogWindow {
+		border:3px solid black;
+		border-radius:12px;
+		background-color: rgba(255,255,255,1);
+		padding:50px;
+		margin-left:20%;
+		margin-right:20%;
+		margin-top:3em;
+	}
+	#dialogWindow h2 {
+		font-size: 3em;
+	}
+
+	p span.name{
+		width:50px;
+		display:inline-block;
+	}
+
+	p span.msg{
+		font-size:larger;
+	}
+
+	p.id0 {
+		color:blue;
+	}
+
+	p.id1 {
+		color:red;
+	}
+        </style>
+    </head>
+    <body>
+        <div id="content"></div>
+	<div id="dialog">
+		<div id="dialogWindow">
+			<h2 id="dialogTitle">Connecting...</h2>
+			<p id="dialogMessage">Please wait...</p>
+		</div>
+	</div>
+       
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+        <script src="frontend.js"></script>
+        <script src="client/client-alpha.js"></script>
+        <script src="backend.js"></script>
+    </body>
+</html>
