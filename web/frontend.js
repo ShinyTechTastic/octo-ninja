@@ -33,7 +33,7 @@ $(function () {
     }
 
     // open connection
-    var connection = new WebSocket('ws://localhost:1337');
+    var connection = new WebSocket('ws://'+document.location.hostname+':1337');
 
     connection.onerror = function (error) {
 	dialog.show("Sorry, but there's some problem with your connection or the server is down.");
