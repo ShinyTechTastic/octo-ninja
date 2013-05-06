@@ -64,7 +64,7 @@ $(function () {
         }
 	    var gameName = json.gameName;
 	    if ( json.type === "server" ){
-		var worker = new Worker("server/"+gameName+".js");
+		var worker = new Worker("games/"+gameName+"/server.js");
                 worker.addEventListener("message",function(data){
 			connection.sendJSON( {
 				type:"serverUpdate",
