@@ -10,33 +10,51 @@ self.addEventListener('message',function( e ){
 					self.postMessage( retval );
 					return;
 				}else{
-					retval.players = players; // assign all the lobbyed players
+					retval.players = 2; // assign two lobbyed players
 					retval.serverData = { 
-						messages : [],
+						board : {},
+						turn: 0
 							};
+					for ( var x=0;x<2;x++)
+						for ( var y=0;y<2;y++){
+							retval.serverData[x+""+y] = 0;
+						}
 					retval.clientData = [];
 					for ( var i=0; i< obj.request.players ; i++ ){
-						retval.clientData[i] = { messages:[] , myMessages:[] };
+						retval.clientData[i] = { board:retval.serverData.board , msg:"" };
+						if ( i === retval.serverData.turn ){
+							retval.clientData[i].msg = "Your turn!";
+							retval.clientData[i].active = true;
+						}else{
+							retval.clientData[i].msg = "Your opponenets turn!";
+							retval.clientData[i].active = false;
+						}
 					}
 				}
 			}else if ( e.data.request.state === "update" ){
 				retval = obj.request;
-				// push messages from users
-				for ( var i in obj.request.clientData ){
-					var client = obj.request.clientData[i];
-					for ( var k in client.myMessages ){
-						retval.serverData.messages.push( 
-							{text:client.myMessages[k].text||"", user:i} );
+				var activePlayer = retval.serverData.turn;
+				var playerData = obj.request.clientData[activePlayer];
+				if ( playerData.move ){
+					if ( retval.serverData[ playerData.move ] == 0 ){
+						retval.serverData[ playerData.move ] = activePlayer;
+						retval.serverData.turn = 1-activePlayer;
 					}
-					client.myMessages = [];
 				}
-				for ( var i in obj.request.clientData ){
-					var client = obj.request.clientData[i];
-					client.messages = retval.serverData.messages;
+				for ( var i in retval.clientData ){
+					var client = retval.clientData[i];
+					client = { board:retval.serverData.board , msg:"" };
+					if ( i === retval.serverData.turn ){
+						client.msg = "Your turn!";
+						client.active = true;
+					}else{
+						client.msg = "Your opponenets turn!";
+						client.active = false;
+					}
 				}
 			}
 		}
 		self.postMessage({console:"RETVAL "+JSON.stringify(retval)});
-		retval.serverData.autoTime = 2000; // update automaticaly every half a second
+		retval.serverData.autoOnChange = true; // update when something changes
 		self.postMessage( retval );
 	});

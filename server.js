@@ -158,6 +158,9 @@ function makeClientConnection( c , gameType ){
      console.log("clientData.");
      c.game.clientData[c.id] = message.data;
      console.log( c.game.clientData[c.id] );
+     if ( c.game.autoOnChange ){
+       updateGame( c.game );
+     }
    }else{
      console.log("Updated state for non-existant game.");
    }
