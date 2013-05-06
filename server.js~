@@ -11,7 +11,7 @@ function loadFile( fn , mime ){
   var filedata = "";
   if ( !mime ){
     if ( /.html/i.exec( fn ) ){
-      mime = "text/html";
+      mime = "test/html";
     }else if ( /.js/i.exec( fn ) ){
       mime = "application/javascript";
     }
@@ -194,11 +194,11 @@ function doOnServerA( request , callback , server ){
        server.close = server.closeIdle;
      }
      callback( message );
-  };
+  }
   server.close = function(){
     // request failed so
     doOnServer( request , callback );
-  };
+  }
   server.send( request );
 }
 

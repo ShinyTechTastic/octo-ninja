@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Noughts and Crosses</title>
+ 
+        <style>
+        * { font-family:tahoma; font-size:12px; padding:0px; margin:0px; }
+        p { line-height:1.2em; }
+	#dialog {
+		position:absolute; top:0; left:0; width:100%; height:100%;
+		background-color:rgba(0,0,0,.8);
+	}
+	#dialogWindow {
+		border:3px solid black;
+		border-radius:12px;
+		background-color: rgba(255,255,255,1);
+		padding:50px;
+		margin-left:20%;
+		margin-right:20%;
+		margin-top:3em;
+	}
+	#dialogWindow h2 {
+		font-size: 3em;
+	}
+
+        table.board {
+                font-size: 3em;
+        }
+        table.board td {
+                width:4em;
+                height:4em;
+        }
+
+        table.board td.x {
+		color: red;
+        }
+
+        table.board td.o {
+		color: blue;
+        }
+        </style>
+    </head>
+        </style>
+    </head>
+    <body>
+        <div id="content">
+          <div class="status"></div>
+          <table class="board">
+            <tr> <td id="00">.</td> <td id="01">.</td> <td id="02">.</td> </tr>
+            <tr> <td id="10">.</td> <td id="11">.</td> <td id="12">.</td> </tr>
+            <tr> <td id="20">.</td> <td id="21">.</td> <td id="22">.</td> </tr>
+          </table>
+        </div>
+	<div id="dialog">
+		<div id="dialogWindow">
+			<h2 id="dialogTitle">Connecting...</h2>
+			<p id="dialogMessage">Please wait...</p>
+		</div>
+	</div>
+       
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+        <script src="frontend.js"></script>
+        <script src="games/xo/client.js"></script>
+        <script src="backend.js"></script>
+    </body>
+</html>
