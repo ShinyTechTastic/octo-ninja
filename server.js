@@ -129,7 +129,6 @@ function makeServerConnection( c ){
     console.log("Message from idle server?");
   }
   c.closeIdle = function(){
-    // TODO: Remove from idleServers
     var index = idleServers.indexOf( c );
     idleServers = idleServers.splice( index , 1 );
   }
@@ -158,7 +157,8 @@ function makeClientConnection( c , gameType ){
      console.log("clientData.");
      c.game.clientData[c.id] = message.data;
      console.log( c.game.clientData[c.id] );
-     if ( c.game.autoOnChange ){
+     if ( c.game.serverData.autoOnChange ){
+       console.log("autoOnChange update.");
        updateGame( c.game );
      }
    }else{

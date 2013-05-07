@@ -1,4 +1,4 @@
-$(function () {
+function startGame( gameType ) {
     "use strict";
 
     var dialog = (function( div ){
@@ -45,7 +45,7 @@ $(function () {
 
     connection.onopen = function () {
 	dialog.show("Connected","Awaiting a free game :)");
-	connection.sendJSON( { connectionType:"client" , gameType:"alpha" } );
+	connection.sendJSON( { connectionType:"client" , gameType:gameType } );
     };
 
 
@@ -88,4 +88,4 @@ $(function () {
 	    }
     };
 
-});
+}

@@ -26,18 +26,37 @@
 
         table.board {
                 font-size: 3em;
+		border:2px solid black;
         }
         table.board td {
+		text-align:center;
+		vertical-align: center;
                 width:4em;
                 height:4em;
         }
 
-        table.board td.x {
-		color: red;
+        table.board td.empty:hover {
+                background-color:yellow;
         }
 
-        table.board td.o {
+        table.board td.cellX {
+		color: red;
+                background-color:#ffaaaa;		
+        }
+
+        table.board td.cellO {
 		color: blue;
+                background-color:#aaaaff;
+        }
+
+        table.board td.winX {
+		color: red;
+                background-color:yellow;
+        }
+
+        table.board td.winO {
+		color: blue;
+                background-color:yellow;
         }
         </style>
     </head>
@@ -59,9 +78,12 @@
 		</div>
 	</div>
        
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
         <script src="frontend.js"></script>
         <script src="games/xo/client.js"></script>
         <script src="backend.js"></script>
+	<script language="javascript">
+		startGame("xo");
+	</script>
     </body>
 </html>

@@ -26,7 +26,7 @@ $(function () {
 		    console.log( "received "+JSON.stringify(json) );
 		    var worker = new Worker('games/'+json.gameType+'/server.js');
 		    worker.addEventListener('message', function(e) {
-			console.log('Worker said: ', e.data);
+			//console.log('Worker said: ', e.data);
 			if ( e.data.console ){
 				console.log( e.data.console );
 			}else{

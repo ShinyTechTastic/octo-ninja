@@ -1,42 +1,37 @@
 function buildDisplay( div ){
-	/*div.send = function( msg ){
-		console.log("NOOP SEND!");
-	};
-	send.click( function(){
-		console.log("Sending :"+enter.val());
-		var m = { text : enter.val() };
-		if ( name.val() ){
-			m.name = name.val();
-			name.val("");
+	div.find(".board").on("click","td",function( e ){
+		console.log("Click active!");
+		if ( div.active ){
+			div.active = false;
+			div.send( {move:e.target.id} );
 		}
-		div.send( { myMessages:[m] } );
-		enter.val("");
-	} );
-	div.clear = function(){
-		details.find("p").remove();
-	};
-	div.write = function( message ){
-		var m = $("<p>").text( message );
-		details.append(m);
-	};*/
+	});
+	div.send = function(){};
 	return div;
 }
 
+var chars = { "-1":"." , "0":"X" , "1":"O" , "2":"X" , "3":"O"};
+var styles = { "-1":"empty" , "0":"cellX" , "1":"cellO" , "2":"winX" , "3":"winO" };
+
 function clientUpdate( obj , reply , dialog , display ){
 	console.log("Doing client update.");
+	console.log( obj );
 	dialog.hide();
-	display.send = reply;
-	if ( obj ){
-		if ( typeof obj.clientData.messages !== "undefined" ){
-			var i;
-			display.find("p").remove();
-			for ( i in obj.clientData.messages ){
-				var msg = obj.clientData.messages[i];
-				var from = $("<span>").addClass("name").text( msg.from );
-				var msgtext = $("<span>").addClass("message").text( msg.text );
-				display.append( $("<p>").addClass("id"+msg.user).append(from).append(msgtext) );
+	var board = obj.clientData.board;
+	if ( board ){
+		// update the board
+		for ( var x=0;x<=2;x++)
+			for ( var y=0;y<=2;y++){
+				var c = display.find("#"+x+y);					
+				var b = board[x+""+y];
+				c.text( chars[b] );
+				for ( i=-1;i<4;i++){
+					c.toggleClass( styles[i] , i==b );
+				}
 			}
-		}
+		display.active = obj.clientData.active;
+		display.find(".status").text(obj.clientData.msg);
 	}
+	display.send = reply;
 }
 
