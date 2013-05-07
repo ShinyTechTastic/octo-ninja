@@ -65,7 +65,7 @@ function buildPaths( path , base ){
 buildPaths( "web" );
 
 var server = http.createServer(function(request, response) {
-//   console.log((new Date()) + ' HTTP server. URL' + request.url + ' requested.');
+   console.log((new Date()) + ' ' + request.url );
     for ( path in paths ){
       if ( "/"+path === request.url ){
         paths[path]( response );
@@ -78,26 +78,26 @@ var server = http.createServer(function(request, response) {
     }else if (request.url === '/status') {
         response.writeHead(200, {'Content-Type': 'application/json'});
         var responseObject = {
-		games:{}, idleservers:idleServers.length,		
+		games:{}, idleServers:idleServers.length, updateQueue:serverQueue.length		
         }
 	for ( var n in lobby ){
 		if ( !responseObject.games[n] ){
-			responseObject.games[n] = {};
+			responseObject.games[n] = { active:[] };
 		}
 		responseObject.games[n].lobby = lobby[n].length;
 	}
 	for ( var n in playedGames ){
 		if ( !responseObject.games[n] ){
-			responseObject.games[n] = {};
+			responseObject.games[n] = { active:[] };
 		}
 		responseObject.games[n].played = playedGames[n];
 	}
 	for ( var n in activeGames ){
 		var t = activeGames[n].gameType;
 		if ( !responseObject.games[t] ){
-			responseObject.games[t] = {};
+			responseObject.games[t] = { active:[] };
 		}
-		responseObject.games[t].active = (responseObject.games[t].active||0)+1;
+		responseObject.games[t].active.push( activeGames[n].clientStatus );
 	}
 
         response.end(JSON.stringify(responseObject));
@@ -130,7 +130,7 @@ function createUnknownConnection( c , origin ){
            makeClientConnection( this , message.gameType );
          }
        }else{
-         console.log("Unknown message to unknown connection");
+         console.log("Unknown message to unknown connection... "+connection.origin);
        }
     },
     send : function(message){
@@ -140,11 +140,16 @@ function createUnknownConnection( c , origin ){
 	c.close();
     },
     close : function(){
-       console.log("Unknown connection lost! weird huh?");
+       console.log("Unknown connection lost! weird huh?  "+connection.origin);
     }
   };
-  c.on('message', function(message){ connection.receive(JSON.parse(message.utf8Data)); } );
-  c.on('close', function(){ console.log("Connection closed."); connection.close(); } );
+  c.on('message', function(message){ 
+	connection.receive(JSON.parse(message.utf8Data)); 
+  } );
+  c.on('close', function(){ 
+	console.log("Connection closed.  "+connection.origin); 
+	connection.close(); 
+  } );
   return connection;
 }
 
@@ -154,7 +159,7 @@ function makeServerConnection( c ){
   }
   c.closeIdle = function(){
     var index = idleServers.indexOf( c );
-    idleServers = idleServers.splice( index , 1 );
+    idleServers.splice( index , 1 );
   }
   c.receive = c.receiveIdle;
   c.close = c.closeIdle;
@@ -176,6 +181,7 @@ function makeClientConnection( c , gameType ){
     c.game = game;
     c.id = id;
     game.clientStatus[id].alive = true;
+    game.clientStatus[id].origin = c.origin;
   }
   c.receive = function( message ){
    if ( c.game ){
@@ -193,7 +199,7 @@ function makeClientConnection( c , gameType ){
     // Remove from lobby
     var index = lobby[ gameType ].indexOf( c );
     if ( index > -1 ){
-      lobby[ gameType ] = lobby[ gameType ].splice( index , 1 );
+      lobby[ gameType ].splice( index , 1 );
     }
     if ( c.game ){
       c.game.clientStatus[c.id].alive = false;
@@ -236,11 +242,11 @@ function doOnServerA( request , callback , server ){
      callback( message );
   };
   server.close = function(){
-     console.log("Request server lost");
-    // request failed so
+    console.log("Request server lost!"); 
     doOnServer( request , callback );
+    server.closeIdle();
   };
-  console.log("Request sent to "+server.id);
+  console.log("Request sent to "+server.origin );
   server.send( request );
 }
 
@@ -276,13 +282,16 @@ function updateLobby( gameType ){
         };
 	game.removeGame = function(){
 		var index = activeGames.indexOf( game );
+                console.log( "Removing game "+index+" from active games");
 		if ( index > -1 ){
-		    activeGames = activeGames.splice( index , 1 );
+                console.log( activeGames );
+		activeGames.splice( index , 1 );
+                console.log( activeGames );
+			for ( var id in this.players){
+			    this.players[id].forceClose();
+			}
+			playedGames[game.gameType] = (playedGames[game.gameType]||0)+1;
 		}
-		for ( var id in this.players){
-		    this.players[id].forceClose();
-		}
-		playedGames[game.gameType] = (playedGames[game.gameType]||0)+1;
 	};
         game.postUpdate = function(){
           console.log("POST UPDATE ");
@@ -346,6 +355,6 @@ function updateGame( game ){
 // WebSocket server
 wsServer.on('request', function(request) {
     var connection = request.accept(null, request.origin);
-    console.log("Connection made.");
-    createUnknownConnection( connection , request.origin );
+    console.log("Connection made. "+request.remoteAddress );
+    createUnknownConnection( connection , request.remoteAddress );
 });
