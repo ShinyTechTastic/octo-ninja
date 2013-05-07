@@ -48,6 +48,9 @@ function startGame( gameType ) {
 	connection.sendJSON( { connectionType:"client" , gameType:gameType } );
     };
 
+    connection.onclose = function () {
+	dialog.show("Connection closed","The connection to the server has been closed. This may be a network issue, or the game may have ended");
+    };
 
     // most important part - incoming messages
     connection.onmessage = function (message) {

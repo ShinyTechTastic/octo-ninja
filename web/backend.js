@@ -23,7 +23,8 @@ $(function () {
 	    connection.onmessage = function (message) {
 		try {
 		    var json = JSON.parse(message.data);
-		    console.log( "received "+JSON.stringify(json) );
+		    console.log( "received " );
+		    console.log( json );
 		    var worker = new Worker('games/'+json.gameType+'/server.js');
 		    worker.addEventListener('message', function(e) {
 			//console.log('Worker said: ', e.data);

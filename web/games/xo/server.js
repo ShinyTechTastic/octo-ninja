@@ -74,10 +74,21 @@ self.addEventListener('message',function( e ){
 					}
 				}
 			}
+			// check for players exiting
+			if ( retval.serverData.win == -1 ){
+				for ( var i in obj.request.clientStatus ){
+					if ( ! obj.request.clientStatus[i].alive ){
+						retval.serverData.win = 3;
+					}
+				}
+			}
 			for ( var i in retval.clientData ){
 				var client = retval.clientData[i];
 				client = { board:retval.serverData.board , msg:"" };
-				if ( retval.serverData.win == 2  ){
+				if ( retval.serverData.win == 3  ){
+					client.msg = "Match Canceled";
+					client.active = false;
+				}else if ( retval.serverData.win == 2  ){
 					client.msg = "Draw!";
 					client.active = false;
 				}else if ( retval.serverData.win == -1 ){
@@ -97,10 +108,14 @@ self.addEventListener('message',function( e ){
 					client.active = false;
 				}
 				retval.clientData[i] = client;
-				self.postMessage({console:"client "+i+"  "+JSON.stringify(client)});
 			}
 		}
-		retval.serverData.autoOnChange = true; // update when something changes
+		if ( retval.serverData.win != -1  ){
+			retval.serverData.autoOnChange = false; // don't update when something changes these are end states
+			retval.serverData.gameOver = true;
+		}else{
+			retval.serverData.autoOnChange = true; // update when something changes
+		}
 		self.postMessage({console:"RETVAL "+JSON.stringify(retval)});
 		self.postMessage( retval );
 	});

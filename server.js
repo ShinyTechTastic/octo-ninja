@@ -115,8 +115,11 @@ function createUnknownConnection( c , origin ){
     send : function(message){
 	c.sendUTF(JSON.stringify( message ));
     },
+    forceClose : function(){
+	c.close();
+    },
     close : function(){
-       console.log("Unknown connection lost");
+       console.log("Unknown connection lost! weird huh?");
     }
   };
   c.on('message', function(message){ connection.receive(JSON.parse(message.utf8Data)); } );
@@ -151,19 +154,32 @@ function makeClientConnection( c , gameType ){
   c.assignGame = function( game , id ){
     c.game = game;
     c.id = id;
+    game.clientStatus[id].alive = true;
   }
   c.receive = function( message ){
    if ( c.game ){
-     console.log("clientData.");
      c.game.clientData[c.id] = message.data;
      console.log( c.game.clientData[c.id] );
      if ( c.game.serverData.autoOnChange ){
-       console.log("autoOnChange update.");
        updateGame( c.game );
      }
    }else{
      console.log("Updated state for non-existant game.");
    }
+  }
+  c.alive = true;
+  c.close = function(){
+    // Remove from lobby
+    var index = lobby[ gameType ].indexOf( c );
+    if ( index > -1 ){
+      lobby[ gameType ] = lobby[ gameType ].splice( index , 1 );
+    }
+    if ( c.game ){
+      c.game.clientStatus[c.id].alive = false;
+      if ( c.game.serverData.autoOnChange ){ // push an update if we're autoOnChanging
+        updateGame( c.game );
+      }
+    }
   }
   // add to the lobby
   if ( typeof lobby[ gameType ] === 'undefined' ){
@@ -186,8 +202,8 @@ function doOnServer( request , callback ){
 }
 
 function doOnServerA( request , callback , server ){
-   console.log("Request processed");
    server.receive = function(message){
+     console.log("Request procesed");
      if ( serverQueue.length > 0 ){
        var n = serverQueue.pop();
        doOnServerA( n.request , n.callback , server );
@@ -199,9 +215,11 @@ function doOnServerA( request , callback , server ){
      callback( message );
   };
   server.close = function(){
+     console.log("Request server lost");
     // request failed so
     doOnServer( request , callback );
   };
+  console.log("Request sent to "+server.id);
   server.send( request );
 }
 
@@ -221,6 +239,7 @@ function updateLobby( gameType ){
         var game = {
             serverData: reply.serverData||{},
             clientData: reply.clientData||[],
+            clientStatus: [],
             all: reply.all|{},
           };
         game.gameType = gameType;
@@ -234,6 +253,15 @@ function updateLobby( gameType ){
                                      clientData:this.clientData[id]||{} } );
           }
         };
+	game.removeGame = function(){
+		var index = activeGames.indexOf( game );
+		if ( index > -1 ){
+		    activeGames = activeGames.splice( index , 1 );
+		}
+		for ( var id in this.players){
+		    this.players[id].forceClose();
+		}
+	};
         game.postUpdate = function(){
           console.log("POST UPDATE ");
           console.log(this.serverData);
@@ -245,10 +273,17 @@ function updateLobby( gameType ){
               updateGame( game );
             } , this.serverData.autoTime );
           }
+          if ( this.serverData.gameOver ){
+            console.log("Game Over triggered");
+            setTimeout( function(){ 
+              game.removeGame();
+            } , 5000 );
+          }
         };
         game.players = [];
         game.playerUpdate = [];
         for( i=0 ; i<reply.players; i++ ){
+	  game.clientStatus[i] = {}; // empty status object
           console.log("Adding player "+i);
           var client = lobby[gameType].pop();
 	        game.players.push( client );
@@ -264,18 +299,18 @@ function updateLobby( gameType ){
 }
 
 function updateGame( game ){
-  console.log( game );
   doOnServer( { 
      gameType:game.gameType , 
 		 request:{
   			state:"update",
         serverData:game.serverData,
         clientData:game.clientData,
+        clientStatus:game.clientStatus,
         all:game.all
   		} 
 		} , 
     function( reply ){
-      game.all = reply.all;
+      game.all = reply.all||{};
     	game.serverData = reply.serverData;
     	game.state = reply.state;
     	game.clientData = reply.clientData;
