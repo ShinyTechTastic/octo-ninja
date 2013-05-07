@@ -65,10 +65,22 @@ self.addEventListener('message',function( e ){
 					retval.serverData.board[line[p]] = 2+sym;
 				}
 			}
+			// check for draws
+			if ( retval.serverData.win == -1 ){
+				retval.serverData.win = 2;
+				for ( n in retval.serverData.board ){
+					if ( retval.serverData.board[n] == -1 ){
+						retval.serverData.win = -1;
+					}
+				}
+			}
 			for ( var i in retval.clientData ){
 				var client = retval.clientData[i];
 				client = { board:retval.serverData.board , msg:"" };
-				if ( retval.serverData.win == -1 ){
+				if ( retval.serverData.win == 2  ){
+					client.msg = "Draw!";
+					client.active = false;
+				}else if ( retval.serverData.win == -1 ){
 					if ( i == retval.serverData.turn ){
 						client.msg = "Your turn!";
 						client.active = true;
