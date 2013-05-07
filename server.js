@@ -2,7 +2,8 @@ var WebSocketServer = require('websocket').server;
 var http = require('http');
 var fs = require('fs');
 
-var lobby = [];
+var lobby = {};
+var playedGames = {};
 var idleServers = [];
 
 var activeGames = [];
@@ -77,8 +78,28 @@ var server = http.createServer(function(request, response) {
     }else if (request.url === '/status') {
         response.writeHead(200, {'Content-Type': 'application/json'});
         var responseObject = {
-		lobbys:lobby.length, servers:idleServers.length		
+		games:{}, idleservers:idleServers.length,		
         }
+	for ( var n in lobby ){
+		if ( !responseObject.games[n] ){
+			responseObject.games[n] = {};
+		}
+		responseObject.games[n].lobby = lobby[n].length;
+	}
+	for ( var n in playedGames ){
+		if ( !responseObject.games[n] ){
+			responseObject.games[n] = {};
+		}
+		responseObject.games[n].played = playedGames[n];
+	}
+	for ( var n in activeGames ){
+		var t = activeGames[n].gameType;
+		if ( !responseObject.games[t] ){
+			responseObject.games[t] = {};
+		}
+		responseObject.games[t].active = (responseObject.games[t].active||0)+1;
+	}
+
         response.end(JSON.stringify(responseObject));
     } else {
         response.writeHead(404, {'Content-Type': 'text/plain'});
@@ -261,6 +282,7 @@ function updateLobby( gameType ){
 		for ( var id in this.players){
 		    this.players[id].forceClose();
 		}
+		playedGames[game.gameType] = (playedGames[game.gameType]||0)+1;
 	};
         game.postUpdate = function(){
           console.log("POST UPDATE ");
