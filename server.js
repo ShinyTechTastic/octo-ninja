@@ -4,9 +4,17 @@ var fs = require('fs');
 
 var lobby = {};
 var playedGames = {};
+var allServers = [];
 var idleServers = [];
 
 var activeGames = [];
+
+idleServers.popRandom = function(){
+  var id = Math.floor(Math.random()*this.length);
+  var r = this[id];
+  this.splice( id , 1 );
+  return r;
+}
 
 function loadFile( fn , mime ){
   var filedata = "";
@@ -78,7 +86,7 @@ var server = http.createServer(function(request, response) {
     }else if (request.url === '/status') {
         response.writeHead(200, {'Content-Type': 'application/json'});
         var responseObject = {
-		games:{}, idleServers:idleServers.length, updateQueue:serverQueue.length		
+		games:{}, servers:[], idleServers:idleServers.length, updateQueue:serverQueue.length		
         }
 	for ( var n in lobby ){
 		if ( !responseObject.games[n] ){
@@ -99,7 +107,9 @@ var server = http.createServer(function(request, response) {
 		}
 		responseObject.games[t].active.push( activeGames[n].clientStatus );
 	}
-
+	for ( var n in allServers ){
+		responseObject.servers.push( { origin:allServers[n].origin , status:allServers[n].status , jobs:allServers[n].jobs } );
+        }
         response.end(JSON.stringify(responseObject));
     } else {
         response.writeHead(404, {'Content-Type': 'text/plain'});
@@ -159,10 +169,17 @@ function makeServerConnection( c ){
   }
   c.closeIdle = function(){
     var index = idleServers.indexOf( c );
-    idleServers.splice( index , 1 );
+    if ( index > -1 )
+      idleServers.splice( index , 1 );
+    index = allServers.indexOf( c );
+    if ( index > -1 )
+      allServers.splice( index , 1 );
   }
   c.receive = c.receiveIdle;
   c.close = c.closeIdle;
+  c.status = "idle";
+  c.jobs = 0;
+  allServers.push( c );
   idleServers.push( c );
   idleServersUpdate();
 }
@@ -224,17 +241,19 @@ function doOnServer( request , callback ){
    serverQueue.push( { request:request , callback:callback } );
    console.log("Request queued "+serverQueue.length);
   }else{
-    doOnServerA( request , callback , idleServers.pop() );
+    doOnServerA( request , callback , idleServers.popRandom() );
   }
 }
 
 function doOnServerA( request , callback , server ){
    server.receive = function(message){
      console.log("Request procesed");
+     server.jobs ++;
      if ( serverQueue.length > 0 ){
        var n = serverQueue.pop();
        doOnServerA( n.request , n.callback , server );
      }else{
+       server.state = "idle";
        idleServers.push( server );
        server.receive = server.receiveIdle;
        server.close = server.closeIdle;
@@ -246,6 +265,7 @@ function doOnServerA( request , callback , server ){
     doOnServer( request , callback );
     server.closeIdle();
   };
+  server.state = "working on "+request.gameType;
   console.log("Request sent to "+server.origin );
   server.send( request );
 }
