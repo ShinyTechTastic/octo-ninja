@@ -1,16 +1,16 @@
 self.addEventListener('message',function( e ){
 
-		function tryline( board , sx , sy , dx , dy , serverData){
+		function tryline( board , sx , sy , dx , dy ){
 			var n = board[ sx+"_"+sy ];
 			var i;
-			if ( n < 0 ) return false;
+			if ( n < 0 ) return -1;
 		self.postMessage({console:"checking "+sx+","+sy+"  "+dx+","+dy+"  "+n });
 			var ix = sx + dx;
 			var iy = sy- + dy;
 			for ( i=0 ; i<(board.linelength-1);i++ ){
 		self.postMessage({console:"    "+ix+","+iy+"  "+i+"  "+board[ ix+"_"+iy ] });
 				if ( n != board[ ix+"_"+iy ] ){
-					return false;
+					return -1;
 				}
 				ix += dx;
 				iy += dy;
@@ -23,9 +23,7 @@ self.addEventListener('message',function( e ){
 				ix += dx;
 				iy += dy;
 			}
-			serverdata.turn = -1;
-			serverData.win = n;
-			return true;
+			return n;
 		}
 
 
@@ -87,21 +85,25 @@ self.addEventListener('message',function( e ){
 			// basic idea, start at the bottom and trace possible lines
 			//  not very efficient, but should work
 			var board = retval.serverData.board;
+			var n;
 			for ( var y=board.height;y>0;y--){
 				for ( var x=0;x<=board.width;x++){
-					if ( tryline(board,x,y,0,-1,retval.serverData) ){
-						// win straight up
-						y = -1;
-						x = 1000;
-					}else if ( x > 3 ){
-						if ( tryline(board,x,y,-1,-1,retval.serverData) || tryline(board,x,y,-1,0,retval.serverData) ){
-							y = -1;
-							x = 1000;
+					n = tryline(board,x,y,0,-1);
+						if ( n==-1 && x > 3 ){
+							n = tryline(board,x,y,-1,-1);
+							if ( n == - 1 ){
+								n = tryline(board,x,y,-1,0);
+							} 
 						}
-					}else if ( x < board.width-4 ){
-						if ( tryline(board,x,y,1,-1,retval.serverData) || tryline(board,x,y,1,0,retval.serverData) ){
-							y = -1;
-							x = 1000;
+						if ( n==-1 && x < board.width-4 ){
+							n = tryline(board,x,y,1,-1);
+							if ( n == - 1 ){
+								n = tryline(board,x,y,1,0);
+							} 
+						}
+						if ( n != -1 ){
+							retval.serverData.win = n;
+							retval.serverData.turn = -1;
 						}
 					}
 				}
