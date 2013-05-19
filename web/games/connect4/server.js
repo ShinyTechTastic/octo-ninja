@@ -6,7 +6,7 @@ self.addEventListener('message',function( e ){
 			if ( n < 0 ) return false;
 		self.postMessage({console:"checking "+sx+","+sy+"  "+dx+","+dy+"  "+n });
 			var ix = sx + dx;
-			var iy = sy + dy;
+			var iy = sy- + dy;
 			for ( i=0 ; i<(board.linelength-1);i++ ){
 		self.postMessage({console:"    "+ix+","+iy+"  "+i+"  "+board[ ix+"_"+iy ] });
 				if ( n != board[ ix+"_"+iy ] ){
@@ -23,6 +23,7 @@ self.addEventListener('message',function( e ){
 				ix += dx;
 				iy += dy;
 			}
+			serverdata.turn = -1;
 			serverData.win = n;
 			return true;
 		}
