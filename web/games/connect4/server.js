@@ -102,6 +102,7 @@ self.addEventListener('message',function( e ){
 							} 
 						}
 						if ( n != -1 ){
+		self.postMessage({console:"Win detected"});
 							retval.serverData.win = n;
 							retval.serverData.turn = -1;
 						}
