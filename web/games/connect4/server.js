@@ -89,23 +89,22 @@ self.addEventListener('message',function( e ){
 			for ( var y=board.height;y>0;y--){
 				for ( var x=0;x<=board.width;x++){
 					n = tryline(board,x,y,0,-1);
-						if ( n==-1 && x > 3 ){
-							n = tryline(board,x,y,-1,-1);
-							if ( n == - 1 ){
-								n = tryline(board,x,y,-1,0);
-							} 
-						}
-						if ( n==-1 && x < board.width-4 ){
-							n = tryline(board,x,y,1,-1);
-							if ( n == - 1 ){
-								n = tryline(board,x,y,1,0);
-							} 
-						}
-						if ( n != -1 ){
-		self.postMessage({console:"Win detected"});
-							retval.serverData.win = n;
-							retval.serverData.turn = -1;
-						}
+					if ( n==-1 && x > 3 ){
+						n = tryline(board,x,y,-1,-1);
+						if ( n == - 1 ){
+							n = tryline(board,x,y,-1,0);
+						} 
+					}
+					if ( n==-1 && x < board.width-4 ){
+						n = tryline(board,x,y,1,-1);
+						if ( n == - 1 ){
+							n = tryline(board,x,y,1,0);
+						} 
+					}
+					if ( n != -1 ){
+	self.postMessage({console:"Win detected"});
+						retval.serverData.win = n;
+						retval.serverData.turn = -1;
 					}
 				}
 			}
