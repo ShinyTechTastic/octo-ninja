@@ -1,6 +1,6 @@
 self.addEventListener('message',function( e ){
 
-		function tryline( board , sx , sy , dx , dy ){
+		function tryline( board , sx , sy , dx , dy , serverData){
 			var n = board[ sx+"_"+sy ];
 			var i;
 			if ( n < 0 ) return false;
@@ -15,7 +15,7 @@ self.addEventListener('message',function( e ){
 				ix += dx;
 				iy += dy;
 			}
-		self.postMessage({console:"  WIN" });
+			self.postMessage({console:"  WIN for "+n });
 			ix = sx;
 			iy = sy;
 			for ( i=0 ; i<board.linelength;i++ ){
@@ -23,7 +23,7 @@ self.addEventListener('message',function( e ){
 				ix += dx;
 				iy += dy;
 			}
-
+			serverData.win = n;
 			return true;
 		}
 
@@ -88,42 +88,25 @@ self.addEventListener('message',function( e ){
 			var board = retval.serverData.board;
 			for ( var y=board.height;y>0;y--){
 				for ( var x=0;x<=board.width;x++){
-					if ( tryline(board,x,y,0,-1) ){
+					if ( tryline(board,x,y,0,-1,retval.serverData) ){
 						// win straight up
 						y = -1;
 						x = 1000;
 					}else if ( x > 3 ){
-						if ( tryline(board,x,y,-1,-1) || tryline(board,x,y,-1,0) ){
+						if ( tryline(board,x,y,-1,-1,retval.serverData) || tryline(board,x,y,-1,0,retval.serverData) ){
 							y = -1;
 							x = 1000;
 						}
 					}else if ( x < board.width-4 ){
-						if ( tryline(board,x,y,1,-1) || tryline(board,x,y,1,0) ){
+						if ( tryline(board,x,y,1,-1,retval.serverData) || tryline(board,x,y,1,0,retval.serverData) ){
 							y = -1;
 							x = 1000;
 						}
 					}
 				}
 			}
-			if ( x == 1000 ){
-				retval.serverData.win = 1; // should work out the correct player :)
-			}
+			
 			retval.serverData.board = board;
-/*			for ( var lineId in lines ){
-				var line = lines[lineId];
-				var sym = retval.serverData.board[line[0]];
-				if ( sym == -1 ) continue;
-				var s2 = retval.serverData.board[line[1]];
-				if ( s2 != sym ) continue;
-				var s2 = retval.serverData.board[line[2]];
-				if ( s2 != sym ) continue;
-				// this line wins...
-				retval.serverData.turn = -1;
-				retval.serverData.win = sym;
-				for ( p in line ){
-					retval.serverData.board[line[p]] = 2+sym;
-				}
-			}*/
 			// check for draws
 			if ( retval.serverData.win == -1 ){
 				retval.serverData.win = 2;
