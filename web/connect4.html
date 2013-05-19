@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Connect 4</title>
+ 
+        <style>
+    	#dialog {
+    		position:absolute; top:0; left:0; width:100%; height:100%;
+    		background-color:rgba(0,0,0,.8);
+    	}
+    	#dialogWindow {
+    		border:3px solid black;
+    		border-radius:12px;
+    		background-color: rgba(255,255,255,1);
+    		padding:50px;
+    		margin-left:20%;
+    		margin-right:20%;
+    		margin-top:3em;
+    	}
+    	#dialogWindow h2 {
+    		font-size: 3em;
+    	}
+
+        table.board {
+          font-size: 3em;
+		  border:2px solid black;
+        }
+        table.board td {
+		  text-align:center;
+		  vertical-align: center;
+                width:4em;
+                height:4em;
+        }
+
+        table.board td.valid:hover {
+                background-color:yellow;
+        }
+
+        table.board td.cellA {
+		      color: red;
+              background-color:#ffaaaa;		
+        }
+
+        table.board td.cellB {
+		      color: blue;
+              background-color:#aaaaff;
+        }
+
+        table.board td.winA {
+		      color: red;
+              background-color:yellow;
+        }
+
+        table.board td.winB {
+		      color: blue;
+              background-color:yellow;
+        }
+        </style>
+    </head>
+        </style>
+    </head>
+    <body>
+        <div id="content">
+          <h3 class="title">Connect4</h3>
+          <div class="status"></div>
+          <table class="board">
+          </table>
+        </div>
+	<div id="dialog">
+		<div id="dialogWindow">
+            <h3 class="title">Connect4</h3>
+			<h2 id="dialogTitle">Connecting...</h2>
+			<p id="dialogMessage">Please wait...</p>
+		</div>
+	</div>
+       
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        <script src="frontend.js"></script>
+        <script src="games/connect4/client.js"></script>
+        <script src="backend.js"></script>
+	<script language="javascript">
+		startGame("connect4");
+	</script>
+    </body>
+</html>
